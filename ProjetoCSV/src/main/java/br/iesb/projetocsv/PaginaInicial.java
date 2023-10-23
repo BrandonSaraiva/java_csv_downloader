@@ -7,6 +7,7 @@
 package br.iesb.projetocsv;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.opencsv.CSVParserBuilder;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,12 +21,51 @@ import java.net.URLConnection;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvException;
+import com.opencsv.exceptions.CsvValidationException;
+import java.awt.BorderLayout;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 public class PaginaInicial extends javax.swing.JFrame {
     
     private boolean arquivoAberto = false;
     private String nomeArquivoAberto = "Nenhum arquivo aberto";
-
+    private Connection conexao;
+    private boolean conexaoAtiva = false;
+    private String hostConexaoAtiva = "";
+    
+    /* Atributos exclusivos do arquivo */
+    String nomeArquivoBaixado = "csvBaixado.csv"; // Nome do arquivo baixado
+    String diretorioProjeto = System.getProperty("user.dir");
+    String caminhoAbsoluto = diretorioProjeto + File.separator + nomeArquivoBaixado;
+    File arquivo = new File(caminhoAbsoluto);
+    private String originalFileName = null;
+    
+    private SwingWorker<Void, Void> worker;
+    
+    
     public PaginaInicial() {
 	initComponents();
 	
@@ -36,23 +76,24 @@ public class PaginaInicial extends javax.swing.JFrame {
 	    exibirConteudoCSV(csvFile); // Exibe o conteúdo do arquivo
 	} else {
 	    jMenuItem_FecharArquivo.setEnabled(false); // Desabilita o item de menu
+	    jMenuItem_EnviarParaBD.setEnabled(false); 
 	}
 
     }
     
-private void exibirConteudoCSV(File csvFile) {
-    try {
-        BufferedReader reader = new BufferedReader(new FileReader(csvFile));
-        StringBuilder conteudo = new StringBuilder();
-        String linha;
-        while ((linha = reader.readLine()) != null) {
-            conteudo.append(linha).append("\n");
-        }
-        Console.setText(conteudo.toString());
-    } catch (IOException e) {
-        e.printStackTrace();
+    private void exibirConteudoCSV(File csvFile) {
+	try {
+	    BufferedReader reader = new BufferedReader(new FileReader(csvFile));
+	    StringBuilder conteudo = new StringBuilder();
+	    String linha;
+	    while ((linha = reader.readLine()) != null) {
+		conteudo.append(linha).append("\n");
+	    }
+	    Console.setText(conteudo.toString());
+	} catch (IOException e) {
+	    System.err.println( "Falha ao carregar o arquivo CSV (exibirConteudoCSV())." );
+	}
     }
-}
 
     public static void main(String args[]) {
 	/* Definição do tema da UI */
@@ -84,6 +125,33 @@ private void exibirConteudoCSV(File csvFile) {
         jButton_CancelarFechamentoArquivo = new javax.swing.JButton();
         jButton_ConfirmarFechamentoArquivo = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
+        jDialog_LoginBD = new javax.swing.JDialog();
+        jPanel4 = new javax.swing.JPanel();
+        jLabelHost = new javax.swing.JLabel();
+        jTextFieldHost = new javax.swing.JTextField();
+        jLabelPorta = new javax.swing.JLabel();
+        jTextFieldPorta = new javax.swing.JTextField();
+        jLabelBanco = new javax.swing.JLabel();
+        jTextFieldBanco = new javax.swing.JTextField();
+        jLabelUser = new javax.swing.JLabel();
+        jTextFieldUser = new javax.swing.JTextField();
+        jSeparator4 = new javax.swing.JSeparator();
+        jLabelPass = new javax.swing.JLabel();
+        jButtonConectar = new javax.swing.JButton();
+        jButtonCancelar = new javax.swing.JButton();
+        jButtonTestarConexao = new javax.swing.JButton();
+        jTextFieldPass = new javax.swing.JPasswordField();
+        jLabelHost1 = new javax.swing.JLabel();
+        jRadioButton1 = new javax.swing.JRadioButton();
+        jDialog_Sobre = new javax.swing.JDialog();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jProgressBar1 = new javax.swing.JProgressBar();
+        jLabel8 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jButton_LimparConsole = new javax.swing.JButton();
         jButton_VisualizarCSV = new javax.swing.JButton();
@@ -103,7 +171,8 @@ private void exibirConteudoCSV(File csvFile) {
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         jMenuItem_FiltrarDados = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
-        jMenuItem_EnviarBD = new javax.swing.JMenuItem();
+        jMenuItem_ConectarBD = new javax.swing.JMenuItem();
+        jMenuItem_EnviarParaBD = new javax.swing.JMenuItem();
         jMenu_Sobre = new javax.swing.JMenu();
         jMenuItem_AtalhosTeclado = new javax.swing.JMenuItem();
         jMenuItem_Sobre = new javax.swing.JMenuItem();
@@ -114,7 +183,6 @@ private void exibirConteudoCSV(File csvFile) {
 
         jDialog_FecharArquivo.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         jDialog_FecharArquivo.setLocation(new java.awt.Point(0, 0));
-        jDialog_FecharArquivo.setMaximumSize(null);
         jDialog_FecharArquivo.setModalExclusionType(null);
         jDialog_FecharArquivo.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         jDialog_FecharArquivo.setResizable(false);
@@ -198,8 +266,197 @@ private void exibirConteudoCSV(File csvFile) {
 
         jDialog_FecharArquivo.getContentPane().add(jPanel3, java.awt.BorderLayout.CENTER);
 
+        jDialog_LoginBD.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        jDialog_LoginBD.setTitle("Conectar ao Banco de Dados");
+        jDialog_LoginBD.setModalExclusionType(null);
+        jDialog_LoginBD.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+        jDialog_LoginBD.setPreferredSize(new java.awt.Dimension(420, 310));
+        jDialog_LoginBD.setResizable(false);
+        jDialog_LoginBD.setSize(new java.awt.Dimension(420, 310));
+        jDialog_LoginBD.setType(java.awt.Window.Type.POPUP);
+        jDialog_LoginBD.getContentPane().setLayout(new java.awt.CardLayout());
+        jDialog_LoginBD.setLocationRelativeTo(null);
+
+        jLabelHost.setText("SGBD:");
+
+        jTextFieldHost.setToolTipText("XX.XX.XX.XX");
+
+        jLabelPorta.setText("Porta:");
+
+        jLabelBanco.setText("Nome do Banco: ");
+
+        jLabelUser.setText("Nome de Usuário: ");
+
+        jLabelPass.setText("Senha:");
+
+        jButtonConectar.setText("Conectar");
+        jButtonConectar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonConectarActionPerformed(evt);
+            }
+        });
+
+        jButtonCancelar.setText("Cancelar");
+        jButtonCancelar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonCancelarActionPerformed(evt);
+            }
+        });
+
+        jButtonTestarConexao.setText("Testar Conexão");
+        jButtonTestarConexao.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonTestarConexaoActionPerformed(evt);
+            }
+        });
+
+        jLabelHost1.setText("Host:");
+
+        jRadioButton1.setSelected(true);
+        jRadioButton1.setText("PostgreSQL");
+        jRadioButton1.setEnabled(false);
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(jPanel4Layout.createSequentialGroup()
+                            .addComponent(jButtonCancelar)
+                            .addGap(110, 110, 110)
+                            .addComponent(jButtonTestarConexao)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jButtonConectar))
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jSeparator4, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabelUser, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextFieldUser))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabelPass, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextFieldPass, javax.swing.GroupLayout.PREFERRED_SIZE, 255, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jLabelHost, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabelBanco, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+                            .addComponent(jLabelPorta, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelHost1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jTextFieldPorta, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTextFieldBanco)
+                            .addComponent(jTextFieldHost)
+                            .addComponent(jRadioButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE))))
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jRadioButton1)
+                    .addComponent(jLabelHost))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextFieldHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelHost1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelPorta)
+                    .addComponent(jTextFieldPorta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelBanco)
+                    .addComponent(jTextFieldBanco, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelUser)
+                    .addComponent(jTextFieldUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelPass)
+                    .addComponent(jTextFieldPass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(32, 32, 32)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonConectar)
+                    .addComponent(jButtonCancelar)
+                    .addComponent(jButtonTestarConexao))
+                .addGap(19, 19, 19))
+        );
+
+        jDialog_LoginBD.getContentPane().add(jPanel4, "card2");
+
+        jDialog_Sobre.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        jDialog_Sobre.setTitle("Sobre");
+        jDialog_Sobre.setModalExclusionType(null);
+        jDialog_Sobre.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+        jDialog_Sobre.setPreferredSize(new java.awt.Dimension(360, 300));
+        jDialog_Sobre.setResizable(false);
+        jDialog_Sobre.setSize(new java.awt.Dimension(360, 300));
+        jDialog_Sobre.setLocationRelativeTo(null);
+
+        jLabel3.setText("Robson Ricardo Leite da Silva");
+
+        jLabel4.setText("Brandon Cardoso de Araújo Saraiva");
+
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel5.setText("CSV Toolkit");
+
+        jLabel6.setText("alpha-0.0.5");
+
+        jLabel7.setText("Apagando C:\\WINDOWS\\System32 ...");
+
+        jProgressBar1.setIndeterminate(true);
+
+        jLabel8.setText("build 231023");
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(22, 22, 22)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel7)
+                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel5))
+                .addContainerGap(28, Short.MAX_VALUE))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addComponent(jLabel4)
+                .addGap(3, 3, 3)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 121, Short.MAX_VALUE)
+                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel7)
+                .addGap(22, 22, 22))
+        );
+
+        jDialog_Sobre.getContentPane().add(jPanel5, java.awt.BorderLayout.CENTER);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Analisador de CSV");
+        setTitle("CSV Toolkit");
 
         jButton_LimparConsole.setText("Limpar console");
         jButton_LimparConsole.addActionListener(new java.awt.event.ActionListener() {
@@ -318,9 +575,22 @@ private void exibirConteudoCSV(File csvFile) {
         jMenu_Ferramentas.add(jMenuItem_FiltrarDados);
         jMenu_Ferramentas.add(jSeparator3);
 
-        jMenuItem_EnviarBD.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        jMenuItem_EnviarBD.setText("Enviar para Banco de Dados");
-        jMenu_Ferramentas.add(jMenuItem_EnviarBD);
+        jMenuItem_ConectarBD.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jMenuItem_ConectarBD.setText("Conectar Banco de Dados...");
+        jMenuItem_ConectarBD.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem_ConectarBDActionPerformed(evt);
+            }
+        });
+        jMenu_Ferramentas.add(jMenuItem_ConectarBD);
+
+        jMenuItem_EnviarParaBD.setText("Enviar arquivo para Banco de Dados");
+        jMenuItem_EnviarParaBD.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem_EnviarParaBDActionPerformed(evt);
+            }
+        });
+        jMenu_Ferramentas.add(jMenuItem_EnviarParaBD);
 
         jMenuBar1.add(jMenu_Ferramentas);
 
@@ -330,6 +600,11 @@ private void exibirConteudoCSV(File csvFile) {
         jMenu_Sobre.add(jMenuItem_AtalhosTeclado);
 
         jMenuItem_Sobre.setText("Sobre");
+        jMenuItem_Sobre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem_SobreActionPerformed(evt);
+            }
+        });
         jMenu_Sobre.add(jMenuItem_Sobre);
 
         jMenuBar1.add(jMenu_Sobre);
@@ -363,35 +638,44 @@ private void exibirConteudoCSV(File csvFile) {
 
     
     private void jMenuItem_AbrirLocalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem_AbrirLocalActionPerformed
-        System.out.println("Item de menu clicado: Abrir arquivo local.");
+
+	System.out.println("Item de menu clicado: Abrir arquivo local.");
 
 	int returnValue = fileChooser.showOpenDialog(null);
 
 	if (returnValue == JFileChooser.APPROVE_OPTION) {
 	    File selectedFile = fileChooser.getSelectedFile();
-	    try {
-		fileReader = new FileReader(selectedFile);  // Use a variável fileReader
-		BufferedReader bufferedReader = new BufferedReader(fileReader);
+	    originalFileName = selectedFile.getName(); // Armazene o nome original do arquivo
 
-		String line;
+	    File copyFile = new File("csvImportado.csv"); // Nome do arquivo a ser copiado para o diretório raiz
+
+	    try {
+		// Copia o arquivo selecionado para o diretório raiz
+		Files.copy(selectedFile.toPath(), copyFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+		FileInputStream fileInputStream = new FileInputStream(copyFile);
+		String fileName = copyFile.getName();
 		StringBuilder content = new StringBuilder();
 
-		while ((line = bufferedReader.readLine()) != null) {
-		    content.append(line).append("\n");
+		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream))) {
+		    String line;
+		    while ((line = bufferedReader.readLine()) != null) {
+			content.append(line).append("\n");
+		    }
 		}
 
-		// Exibe o conteúdo do arquivo na textArea
-		Console.setText(content.toString());
-
-		bufferedReader.close();
+		// Fecha os fluxos de entrada
+		fileInputStream.close();
 
 		arquivoAberto = true; // Arquivo foi aberto
 		jMenuItem_FecharArquivo.setEnabled(true); // Habilita o item de menu
-		
-		// Atualize o nome do arquivo aberto
-		nomeArquivoAberto = selectedFile.getName();
+
+		// Atualize o nome do arquivo aberto com o nome original
+		nomeArquivoAberto = originalFileName;
 		jTextField_NomeArquivoAberto.setText(nomeArquivoAberto);
 
+		// Exibe o conteúdo do arquivo copiado na textArea
+		Console.setText(content.toString());
 	    } catch (IOException e) {
 		arquivoAberto = false; // Arquivo não pôde ser aberto
 	    }
@@ -400,42 +684,59 @@ private void exibirConteudoCSV(File csvFile) {
 
     private void jMenuItem_AbrirWebActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem_AbrirWebActionPerformed
         System.out.println("Item de menu clicado: Abrir arquivo da Web.");
-        AbrirArquivoWeb dialog = new AbrirArquivoWeb(this, true);
-        dialog.setVisible(true);
+        AbrirArquivoWeb dialogAbrirWeb = new AbrirArquivoWeb(this, true);
+        dialogAbrirWeb.setVisible(true);
     }//GEN-LAST:event_jMenuItem_AbrirWebActionPerformed
 
     private void jButton_VisualizarCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_VisualizarCSVActionPerformed
-        System.out.println("Botão clicado: Visualizar CSV.");
-	try {
-            // Ler o conteúdo do arquivo CSV e exibi-lo no Console
-            BufferedReader reader = new BufferedReader(new FileReader("csvBaixado.csv"));
-            String linha;
-            StringBuilder conteudo = new StringBuilder();
+	System.out.println("Botão clicado: Visualizar CSV.");
+	String[] allowedFileNames = {"csvBaixado.csv", "csvImportado.csv"};
+	String selectedFileName = null;
 
-            while ((linha = reader.readLine()) != null) {
-                conteudo.append(linha).append("\n");
-            }
+	// Verifique se um dos arquivos permitidos está presente
+	for (String fileName : allowedFileNames) {
+	    File file = new File(fileName);
+	    if (file.exists()) {
+		selectedFileName = fileName;
+		break;
+	    }
+	}
 
-            Console.setText(conteudo.toString());
+	if (selectedFileName != null) {
+	    try {
+		// Ler o conteúdo do arquivo CSV e exibi-lo no Console
+		BufferedReader reader = new BufferedReader(new FileReader(selectedFileName));
+		String linha;
+		StringBuilder conteudo = new StringBuilder();
 
-            reader.close();
-            jMenuItem_FecharArquivo.setEnabled(true); // Desabilita o item de menu
-	    
-	    // Atualize o nome do arquivo aberto
-	    nomeArquivoAberto = "csvBaixado.csv";
-	    jTextField_NomeArquivoAberto.setText(nomeArquivoAberto);
-	    
-        } catch (FileNotFoundException e) {
-            // Arquivo CSV não encontrado, exibe uma mensagem de erro
-            Console.setText("Erro: Arquivo não encontrado. \nAbra um arquivo CSV do seu computador ou faça o download usando o menu acima.");
-	    
-	    nomeArquivoAberto = "Nenhum arquivo aberto";
-	    jTextField_NomeArquivoAberto.setText(nomeArquivoAberto);
-	    
-        } catch (IOException e) {
-            // Lida com outras exceções de E/S, se necessário
-            e.printStackTrace();
-        }
+		while ((linha = reader.readLine()) != null) {
+		    conteudo.append(linha).append("\n");
+		}
+
+		Console.setText(conteudo.toString());
+
+		reader.close();
+		jMenuItem_FecharArquivo.setEnabled(true); // Desabilita o item de menu
+
+		// Atualize o nome do arquivo aberto
+		nomeArquivoAberto = originalFileName;
+		jTextField_NomeArquivoAberto.setText(nomeArquivoAberto);
+
+		jMenuItem_EnviarParaBD.setEnabled(conexaoAtiva);
+
+	    } catch (FileNotFoundException e) {
+		Console.setText("Erro: Arquivo não encontrado. \nAbra um arquivo CSV do seu computador ou faça o download usando o menu acima.");
+		nomeArquivoAberto = "Nenhum arquivo aberto";
+		jTextField_NomeArquivoAberto.setText(nomeArquivoAberto);
+		jMenuItem_EnviarParaBD.setEnabled(false);
+
+	    } catch (IOException e) {
+		System.err.println("Falha ao visualizar o CSV (VisualizarCSVActionPerformed()).");
+		jMenuItem_EnviarParaBD.setEnabled(false);
+	    }
+	} else {
+	    Console.setText("Nenhum arquivo aberto. Abra um arquivo CSV usando o menu acima.");
+	}
     }//GEN-LAST:event_jButton_VisualizarCSVActionPerformed
 
     private void jButton_LimparConsoleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_LimparConsoleActionPerformed
@@ -456,22 +757,30 @@ private void exibirConteudoCSV(File csvFile) {
     }//GEN-LAST:event_jMenuItem_FecharArquivoActionPerformed
 
     private void jButton_ConfirmarFechamentoArquivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_ConfirmarFechamentoArquivoActionPerformed
-        if (jMenuItem_FecharArquivo.isEnabled()) {
+	if (jMenuItem_FecharArquivo.isEnabled()) {
 	    // Feche o arquivo
 	    jMenuItem_FecharArquivo.setEnabled(false); // Desabilita o item de menu
 
 	    // Apague o arquivo "csvBaixado.csv" se existir
-	    File csvFile = new File("csvBaixado.csv");
-	    if (csvFile.exists()) {
-		System.out.println("Ação automática realizada: Arquivo 'csvBaixado.csv' apagado da raíz do aplicativo.");
-		csvFile.delete();
+	    File csvBaixadoFile = new File("csvBaixado.csv");
+	    if (csvBaixadoFile.exists()) {
+		System.out.println("Ação automática realizada: Arquivo 'csvBaixado.csv' apagado da raiz do aplicativo.");
+		csvBaixadoFile.delete();
+	    }
+
+	    // Apague o arquivo "csvImportado.csv" se existir
+	    File csvImportadoFile = new File("csvImportado.csv");
+	    if (csvImportadoFile.exists()) {
+		System.out.println("Ação automática realizada: Arquivo 'csvImportado.csv' apagado da raiz do aplicativo.");
+		csvImportadoFile.delete();
 	    }
 
 	    jDialog_FecharArquivo.dispose();
-	    
+
 	    nomeArquivoAberto = "Nenhum arquivo aberto";
 	    jTextField_NomeArquivoAberto.setText(nomeArquivoAberto);
-	    
+	    jMenuItem_EnviarParaBD.setEnabled(false);
+
 	    Console.setText("Aguardando entrada do usuário..."); // Limpa o Console
 	}
     }//GEN-LAST:event_jButton_ConfirmarFechamentoArquivoActionPerformed
@@ -482,8 +791,100 @@ private void exibirConteudoCSV(File csvFile) {
 	jDialog_FecharArquivo.dispose();
     }//GEN-LAST:event_jButton_CancelarFechamentoArquivoActionPerformed
 
+    private void jMenuItem_ConectarBDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem_ConectarBDActionPerformed
+        System.out.println("Item de menu clicado: Conectar Banco de Dados.");
+       
+	if (conexaoAtiva) {
+	    int option = JOptionPane.showConfirmDialog(this, "Há uma conexão ativa com o banco de dados no host: " + hostConexaoAtiva + ". Deseja encerrar a conexão?", "Conexão Ativa", JOptionPane.YES_NO_OPTION);
+	    System.out.println("Erro: Há uma conexão com Banco de Dados ativa: " + hostConexaoAtiva);
+	    if (option == JOptionPane.YES_OPTION) {
+		encerrarConexao(); // Chame o método para encerrar a conexão
+		System.out.println("Ação: Conexão com Banco de Dados " + hostConexaoAtiva + " encerrada.");
+		jMenuItem_EnviarParaBD.setEnabled(false); // Desabilita o item de menu
+		jDialog_LoginBD.setVisible(true);
+	    }
+	} else {
+	    jDialog_LoginBD.setVisible(true);
+	    if (conexaoAtiva) {
+		jMenuItem_EnviarParaBD.setEnabled(true); // Habilita o item de menu
+	    } else {
+		jMenuItem_EnviarParaBD.setEnabled(false); // Desabilita o item de menu
+	    }
+	}
+    }//GEN-LAST:event_jMenuItem_ConectarBDActionPerformed
+
+    private void jButtonConectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonConectarActionPerformed
+
+        // Obtenha os valores dos campos de texto
+        String host = jTextFieldHost.getText();
+        String porta = jTextFieldPorta.getText();
+        String nomeBanco = jTextFieldBanco.getText();
+        String usuario = jTextFieldUser.getText();
+        String senha = jTextFieldPass.getText();
+
+	if (host.isEmpty() || porta.isEmpty() || nomeBanco.isEmpty() || usuario.isEmpty() || senha.isEmpty()) {
+	    JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.");
+	} else {
+	    // Configuração da conexão
+	    String url = "jdbc:postgresql://" + host + ":" + porta + "/" + nomeBanco;
+	    String driver = "org.postgresql.Driver";
+
+	    try {
+		Class.forName(driver);
+		conexao = DriverManager.getConnection(url, usuario, senha);
+		JOptionPane.showMessageDialog(this, "Conexão bem-sucedida!");
+		System.out.println("Ação: Conexão com Banco de Dados " + hostConexaoAtiva + " bem-sucedida!");
+		conexaoAtiva = true; // Marque a conexão como ativa
+		hostConexaoAtiva = host; // Armazene o host da conexão ativa
+		jDialog_LoginBD.dispose();
+	    } catch (ClassNotFoundException | SQLException e) {
+		JOptionPane.showMessageDialog(this, "Erro ao conectar ao banco de dados.");
+		System.out.println("Erro: Falha ao conectar com o banco de dados em " + hostConexaoAtiva);
+	    }
+	}
+    }//GEN-LAST:event_jButtonConectarActionPerformed
+
+    private void jButtonCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCancelarActionPerformed
+        jDialog_LoginBD.dispose();
+    }//GEN-LAST:event_jButtonCancelarActionPerformed
+
+    private void jButtonTestarConexaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonTestarConexaoActionPerformed
+
+        // Obtenha os valores dos campos de texto
+        String host = jTextFieldHost.getText();
+        String porta = jTextFieldPorta.getText();
+        String nomeBanco = jTextFieldBanco.getText();
+        String usuario = jTextFieldUser.getText();
+        String senha = jTextFieldPass.getText();
+
+        // Verifique se todos os campos estão preenchidos
+        if (host.isEmpty() || porta.isEmpty() || nomeBanco.isEmpty() || usuario.isEmpty() || senha.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.");
+            return;
+        }
+
+        // Tente estabelecer uma conexão de teste com o banco de dados
+        if (testarConexaoBanco(host, porta, nomeBanco, usuario, senha)) {
+            JOptionPane.showMessageDialog(this, "Conexão bem-sucedida. Agora você pode conectar ao banco de dados.");
+        } else {
+            JOptionPane.showMessageDialog(this, "Falha na conexão. Verifique as credenciais e tente novamente.");
+        }
+    }//GEN-LAST:event_jButtonTestarConexaoActionPerformed
+
+    private void jMenuItem_EnviarParaBDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem_EnviarParaBDActionPerformed
+	enviarArquivoCSVParaBancoDeDados();
+    }//GEN-LAST:event_jMenuItem_EnviarParaBDActionPerformed
+
+    private void jMenuItem_SobreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem_SobreActionPerformed
+        System.out.println("Item de menu clicado: Sobre.");
+	
+	jDialog_Sobre.setVisible(true);
+    }//GEN-LAST:event_jMenuItem_SobreActionPerformed
+
     
     
+    
+    /* MÉTODO PARA BAIXAR O ARQUIVO CSV DA WEB - USADO NO DIALOG AbrirArquivoWeb.java */
     public class DownloadCSV {
     public static void downloadCSV(String url) throws IOException {
         URLConnection connection = new URL(url).openConnection();
@@ -505,25 +906,187 @@ private void exibirConteudoCSV(File csvFile) {
         outputStream.close();
     }
 
-	static void downloadCSV(String csvURL, ByteArrayOutputStream downloadedContentStream) {
-	    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    static void downloadCSV(String csvURL, ByteArrayOutputStream downloadedContentStream) {
+	    throw new UnsupportedOperationException("Not supported yet.");
 	}
     }
     
-    
+    private boolean testarConexaoBanco(String host, String porta, String nomeBanco, String usuario, String senha) {
+	boolean conexaoBemSucedida = false;
+
+	// Tente estabelecer uma conexão de teste com as credenciais fornecidas.
+	try {
+	    String url = "jdbc:postgresql://" + host + ":" + porta + "/" + nomeBanco;
+	    Connection connection = DriverManager.getConnection(url, usuario, senha);
+	    // Se a conexão for bem-sucedida, feche-a.
+	    connection.close();
+	    conexaoBemSucedida = true;
+	} catch (SQLException e) {
+	    System.err.println("Erro na conexão: " + e.getMessage());
+	    conexaoBemSucedida = false;
+	}
+
+	return conexaoBemSucedida;
+    }
 
     
+    private void encerrarConexao() {
+	try {
+	    if (conexao != null) {
+		conexao.close();
+		JOptionPane.showMessageDialog(this, "Conexão com o banco de dados encerrada.", "Conexão Encerrada", JOptionPane.INFORMATION_MESSAGE);
+	    }
+	} catch (SQLException e) {
+	    JOptionPane.showMessageDialog(this, "Erro ao encerrar a conexão com o banco de dados.", "Erro", JOptionPane.ERROR_MESSAGE);
+	}
+	conexaoAtiva = false; // Marque a conexão como encerrada
+	hostConexaoAtiva = ""; // Limpe o host da conexão ativa
+}
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
+private void enviarArquivoCSVParaBancoDeDados() {
+    if (conexaoAtiva) {
+        // Crie um diálogo de progresso com label personalizada
+        JDialog progressDialog = new JDialog(this, "Enviando dados para o banco de dados", true);
+        progressDialog.setResizable(false); // Impede o redimensionamento do diálogo
+
+        JLabel label = new JLabel("Aguarde. O envio dos dados pode demorar vários minutos. Mantenha o aplicativo aberto.");
+        label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Adiciona margens internas à label
+        progressDialog.add(label, BorderLayout.NORTH);
+
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true); // Use uma barra de progresso indeterminada
+        progressDialog.add(progressBar, BorderLayout.CENTER);
+
+        // Adicione um botão "CANCELAR" com ação para fechar o diálogo
+        JButton cancelButton = new JButton("CANCELAR ENVIO");
+        cancelButton.addActionListener(e -> {
+            if (conexao != null) {
+                try {
+                    conexao.close(); // Fecha a conexão com o banco de dados
+                } catch (SQLException ex) {
+                }
+            }
+            worker.cancel(true); // Cancela a tarefa SwingWorker
+            progressDialog.dispose(); // Fecha o diálogo
+        });
+        progressDialog.add(cancelButton, BorderLayout.SOUTH);
+
+        progressDialog.pack();
+        progressDialog.setLocationRelativeTo(this);
+
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                try {
+                    String caminhoAbsoluto = nomeArquivoAberto;
+                    if (!new File(nomeArquivoAberto).isAbsolute()) {
+                        String diretorioProjeto = System.getProperty("user.dir");
+                        caminhoAbsoluto = diretorioProjeto + File.separator + nomeArquivoAberto;
+                    }
+
+                    File arquivoCSV = new File(caminhoAbsoluto);
+                    String separador = determinarSeparador(arquivoCSV);
+                    CSVReader csvReader = new CSVReaderBuilder(new FileReader(arquivoCSV))
+                            .withCSVParser(new CSVParserBuilder().withSeparator(separador.charAt(0)).build())
+                            .build();
+                    String[] colunas = csvReader.readNext();
+
+                    if (colunas != null) {
+                        criarTabelaNoBancoDeDados(colunas);
+
+                        // Agora você pode carregar os dados do CSV para a tabela criada
+                        carregarDadosDoCSVParaBancoDeDados(colunas, csvReader);
+
+                        // Feche o diálogo de progresso
+                        SwingUtilities.invokeLater(progressDialog::dispose);
+
+                        JOptionPane.showMessageDialog(PaginaInicial.this, "Tabela criada e dados do arquivo CSV carregados com sucesso.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(PaginaInicial.this, "O arquivo CSV não contém colunas.", "Erro", JOptionPane.ERROR_MESSAGE));
+                    }
+                } catch (IOException | SQLException e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(PaginaInicial.this, "Erro ao enviar dados para o banco de dados: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE));
+                } catch (CsvValidationException ex) {
+                    Logger.getLogger(PaginaInicial.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                return null;
+            }
+        };
+	
+        this.worker = worker;
+        worker.execute(); // Inicie o SwingWorker para realizar o trabalho em segundo plano
+        progressDialog.setVisible(true);
+    } else {
+        JOptionPane.showMessageDialog(this, "Não há uma conexão ativa com o banco de dados.", "Erro", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+private void criarTabelaNoBancoDeDados(String[] colunas) throws SQLException {
+    // Execute a instrução SQL para criar a tabela
+    StringBuilder createTableSQL = new StringBuilder("CREATE TABLE IF NOT EXISTS nome_da_tabela (");
+
+    for (int i = 0; i < colunas.length; i++) {
+        String columnName = colunas[i].trim(); // Nome da coluna
+        String dataType = "VARCHAR"; // Defina todos os tipos como VARCHAR
+
+        createTableSQL.append("\"").append(columnName).append("\"").append(" ").append(dataType);
+
+        if (i < colunas.length - 1) {
+            createTableSQL.append(", ");
+        }
+    }
+
+    createTableSQL.append(")");
+
+    Statement statement = conexao.createStatement();
+    statement.executeUpdate(createTableSQL.toString());
+
+    // Feche a declaração
+    statement.close();
+}
+
+private void carregarDadosDoCSVParaBancoDeDados(String[] colunas, CSVReader csvReader) throws SQLException, IOException {
+    // Prepare a instrução SQL de inserção de dados
+    String insertSQL = "INSERT INTO nome_da_tabela (" + String.join(", ", colunas) + ") VALUES ("
+            + String.join(", ", Collections.nCopies(colunas.length, "?")) + ")";
+
+    // Crie um objeto PreparedStatement para executar a inserção
+    PreparedStatement preparedStatement = conexao.prepareStatement(insertSQL);
+
+    String[] linha;
+	try {
+	    while ((linha = csvReader.readNext()) != null) {
+		for (int i = 0; i < linha.length; i++) {
+		    preparedStatement.setString(i + 1, linha[i]);
+		}
+		preparedStatement.executeUpdate();
+	    }	} catch (CsvValidationException ex) {
+	    Logger.getLogger(PaginaInicial.class.getName()).log(Level.SEVERE, null, ex);
+	}
+
+    // Feche o PreparedStatement
+    preparedStatement.close();
+}
+
+private String determinarSeparador(File arquivoCSV) throws IOException {
+    // Leitura das primeiras linhas para determinar o separador
+    try (BufferedReader reader = new BufferedReader(new FileReader(arquivoCSV))) {
+        String primeiraLinha = reader.readLine();
+        if (primeiraLinha != null) {
+            if (primeiraLinha.contains(",")) {
+                return ",";
+            } else if (primeiraLinha.contains(";")) {
+                return ";";
+            }
+        }
+    }
+    // Caso não seja possível determinar, use o separador padrão (',')
+    return ",";
+}
+  
     
     
     
@@ -531,18 +1094,36 @@ private void exibirConteudoCSV(File csvFile) {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea Console;
     private javax.swing.JFileChooser fileChooser;
+    private javax.swing.JButton jButtonCancelar;
+    private javax.swing.JButton jButtonConectar;
+    private javax.swing.JButton jButtonTestarConexao;
     private javax.swing.JButton jButton_CancelarFechamentoArquivo;
     private javax.swing.JButton jButton_ConfirmarFechamentoArquivo;
     private javax.swing.JButton jButton_LimparConsole;
     private javax.swing.JButton jButton_VisualizarCSV;
     private final javax.swing.JDialog jDialog_FecharArquivo = new javax.swing.JDialog();
+    private javax.swing.JDialog jDialog_LoginBD;
+    private javax.swing.JDialog jDialog_Sobre;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabelBanco;
+    private javax.swing.JLabel jLabelHost;
+    private javax.swing.JLabel jLabelHost1;
+    private javax.swing.JLabel jLabelPass;
+    private javax.swing.JLabel jLabelPorta;
+    private javax.swing.JLabel jLabelUser;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem_AbrirLocal;
     private javax.swing.JMenuItem jMenuItem_AbrirWeb;
     private javax.swing.JMenuItem jMenuItem_AtalhosTeclado;
-    private javax.swing.JMenuItem jMenuItem_EnviarBD;
+    private javax.swing.JMenuItem jMenuItem_ConectarBD;
+    private javax.swing.JMenuItem jMenuItem_EnviarParaBD;
     private javax.swing.JMenuItem jMenuItem_FecharArquivo;
     private javax.swing.JMenuItem jMenuItem_FiltrarDados;
     private javax.swing.JMenuItem jMenuItem_InfoCSV;
@@ -554,11 +1135,21 @@ private void exibirConteudoCSV(File csvFile) {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JSeparator jSeparator4;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextField jTextFieldBanco;
+    private javax.swing.JTextField jTextFieldHost;
+    private javax.swing.JPasswordField jTextFieldPass;
+    private javax.swing.JTextField jTextFieldPorta;
+    private javax.swing.JTextField jTextFieldUser;
     private javax.swing.JTextField jTextField_NomeArquivoAberto;
     // End of variables declaration//GEN-END:variables
 }

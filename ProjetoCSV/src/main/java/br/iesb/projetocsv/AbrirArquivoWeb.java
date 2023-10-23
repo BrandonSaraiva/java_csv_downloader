@@ -81,8 +81,10 @@ public class AbrirArquivoWeb extends javax.swing.JDialog {
         ConsoleWeb.setColumns(20);
         ConsoleWeb.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
         ConsoleWeb.setForeground(new java.awt.Color(0, 204, 102));
+        ConsoleWeb.setLineWrap(true);
         ConsoleWeb.setRows(3);
         ConsoleWeb.setText("Aguardando URL...");
+        ConsoleWeb.setWrapStyleWord(true);
         jScrollPane1.setViewportView(ConsoleWeb);
 
         jButton_Fechar.setText("Fechar");
