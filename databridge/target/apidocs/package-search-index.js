@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.db.databridge.database"},{"l":"com.db.databridge.file"},{"l":"com.db.databridge.util"},{"l":"com.db.databridge.window"}];updateSearchResults();
