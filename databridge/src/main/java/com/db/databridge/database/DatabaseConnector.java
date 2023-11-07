@@ -304,7 +304,7 @@ public class DatabaseConnector extends javax.swing.JDialog {
 	    JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
 	} else {
 	    // Configuração da conexão. Passe essas informações para a classe ConnectionUtil para testar a conexão.
-	    connectionManager.tryConnection(host, port, database, user, password);
+	    connectionManager.testConnection(host, port, database, user, password);
 	    
 	    // Verifique se a conexão foi bem-sucedida
 	    if (connectionManager.isSucceddedConnection()) {

@@ -129,7 +129,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	/* Card 2: Ouvinte de Eventos do Combobox 'combo_PrimaryKeyColumn' */
 	comboSelectPK.addActionListener((ActionEvent e) -> {
 	   String chavePrimaria = comboSelectPK.getSelectedItem().toString();
-	   userSettings.setChavePrimaria(chavePrimaria);
+	   userSettings.setPrimaryKey(chavePrimaria);
 	   updateChavePrimariaLabel();
 	   
 	});
@@ -141,7 +141,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	    
 	    // Verifica se o nome da tabela atende às restrições (apenas letras minúsculas, números e underscores)
 	    if (validateTableName(tableName)) {
-		userSettings.setNomeDaTabela(tableName);
+		userSettings.setTableName(tableName);
 		updateTableNameLabel();
 		labelError.setText("");
 		labelValid.setText("O nome da tabela é válido.");
@@ -228,7 +228,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
     
     /* Card 3: Função para atualizar o label com o nome da tabela */
     public void updateTableNameLabel() {
-        label_nomeTabela.setText(userSettings.getNomeDaTabela());
+        label_nomeTabela.setText(userSettings.getTableName());
     }
     
     /* Card 3: Função para atualizar o label com o Schema */
@@ -238,7 +238,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
     
     /* Card 3: Função para atualizar o label com o Separador */
     public void updateChavePrimariaLabel() {
-	label_primaryKey.setText(userSettings.getChavePrimaria());
+	label_primaryKey.setText(userSettings.getPrimaryKey());
     }
     
     /* Card 3: Enviar os dados para o banco de dados */
@@ -1081,7 +1081,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
     
     private void sendFileToDatabase() {
 	// Verifique se as configurações do usuário estão definidas
-	if (userSettings.getSelectedSeparator() == null || userSettings.getSelectedSchema() == null || userSettings.getNomeDaTabela() == null) {
+	if (userSettings.getSelectedSeparator() == null || userSettings.getSelectedSchema() == null || userSettings.getTableName() == null) {
 	    JOptionPane.showMessageDialog(this, "Certifique-se de configurar todas as opções antes de enviar para o banco de dados.", "Erro", JOptionPane.ERROR_MESSAGE);
 	    return;
 	}
@@ -1193,7 +1193,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	StringBuilder insertSQL = new StringBuilder("INSERT INTO ");
 	insertSQL.append(userSettings.getSelectedSchema());
 	insertSQL.append(".");
-	insertSQL.append(userSettings.getNomeDaTabela());
+	insertSQL.append(userSettings.getTableName());
 	insertSQL.append(" (");
 	insertSQL.append(String.join(", ", colunas));
 	insertSQL.append(") VALUES (");
@@ -1214,7 +1214,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	    StringBuilder createTableSQL = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
 	    createTableSQL.append(userSettings.getSelectedSchema()); // Use o schema selecionado
 	    createTableSQL.append(".");
-	    createTableSQL.append(userSettings.getNomeDaTabela()); // Use o nome da tabela definido pelo usuário
+	    createTableSQL.append(userSettings.getTableName()); // Use o nome da tabela definido pelo usuário
 	    createTableSQL.append(" (");
 
 	    for (int i = 0; i < colunas.length; i++) {

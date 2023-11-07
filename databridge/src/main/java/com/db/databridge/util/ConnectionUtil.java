@@ -60,7 +60,7 @@ public class ConnectionUtil {
         }
     }
 
-    public boolean tryConnection(String host, String port, String database, String user, String password) {
+    public boolean testConnection(String host, String port, String database, String user, String password) {
         try {
             // Configure a conexão com o banco de dados PostgreSQL
             String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + database;
@@ -97,24 +97,10 @@ public class ConnectionUtil {
 	return schemas;
     }
     
-    
-    /* Método que cria um novo Schema no banco de dados */
-    public void criarSchema(String nomeSchema) {
-	if (isConnectionActive()) {
-	    String createSchemaSQL = "CREATE SCHEMA " + nomeSchema;
-	    try (PreparedStatement statement = connection.prepareStatement(createSchemaSQL)) {
-		statement.executeUpdate();
-		System.out.println("Schema criado com sucesso: " + nomeSchema);
-	    } catch (SQLException e) {
-		System.err.println("Erro ao criar schema: " + e.getMessage());
-	    }
-	} else {
-	    System.err.println("Erro: A conexão com o banco de dados não está ativa.");
-	}  
-    }
+   
     
     /* Verifica as tabelas disponíveis no banco de dados - FiltragemDados*/
-    public List<String> getTabelasDisponiveis() {
+    public List<String> getAvailableTables() {
         List<String> tabelas = new ArrayList<>();
         if (connection != null) {
             try {
@@ -132,7 +118,7 @@ public class ConnectionUtil {
     }
     
     /* Obtém o nome das colunas da tabela do banco de dados */
-    public List<String> getColunasDaTabela(String tabela) {
+    public List<String> getTableColumns(String tabela) {
         List<String> colunas = new ArrayList<>();
 
         if (connection == null) {

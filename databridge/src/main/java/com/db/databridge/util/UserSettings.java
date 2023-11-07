@@ -28,20 +28,20 @@ public class UserSettings {
 	System.out.println(selectedSchema);
     }
     
-    public String getNomeDaTabela() {
+    public String getTableName() {
 	return nomeDaTabela;
     }
     
-    public void setNomeDaTabela(String nomeDaTabela) {
+    public void setTableName(String nomeDaTabela) {
 	this.nomeDaTabela = nomeDaTabela;
 	System.out.println(nomeDaTabela);
     }
     
-    public String getChavePrimaria() {
+    public String getPrimaryKey() {
 	return chavePrimaria;
     }
 
-    public void setChavePrimaria(String chavePrimaria) {
+    public void setPrimaryKey(String chavePrimaria) {
 	this.chavePrimaria = chavePrimaria;
 	System.out.println(chavePrimaria);
     }

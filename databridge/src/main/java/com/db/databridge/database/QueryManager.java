@@ -13,7 +13,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class QueryManager extends javax.swing.JDialog {
     
-    private final Home main;
+    private final Home home;
     public DatabaseUploader databaseUploader;
     private final ConnectionUtil connectionManager;
     
@@ -23,17 +23,17 @@ public class QueryManager extends javax.swing.JDialog {
 	super(parent, modal);
 	initComponents();
 	
-	main = (Home) parent;
-	connectionManager = main.connectionManager;
+	home = (Home) parent;
+	connectionManager = home.connectionManager;
 	
 	/* Preenche o combo com os nomes das colunas da tabela */
-	popularNomeTabelasComboBox();
+	populateComboTableNames();
 	
 	// Adicione um ouvinte de alterações ao JComboBox "nome_tabelas"
-	nome_tabelas.addItemListener((ItemEvent e) -> {
+	tableNames.addItemListener((ItemEvent e) -> {
 	    if (e.getStateChange() == ItemEvent.SELECTED) {
 		// O usuário selecionou uma tabela, atualize o JComboBox "coluna"
-		popularNomeColunasComboBox((String) nome_tabelas.getSelectedItem());
+		popularNomeColunasComboBox((String) tableNames.getSelectedItem());
 		
 		System.out.println("Combo nome_tabelas populado.");
 	    }
@@ -42,7 +42,7 @@ public class QueryManager extends javax.swing.JDialog {
 	// Configure o modelo da tabela
         String[] columnNames = {}; // Inicialmente, nenhum nome de coluna
         tableModel = new DefaultTableModel(columnNames, 0);
-        jTable1.setModel(tableModel);
+        resultsTable.setModel(tableModel);
 	
     }
 
@@ -52,21 +52,21 @@ public class QueryManager extends javax.swing.JDialog {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        combo_coluna = new javax.swing.JComboBox<>();
+        comboColumnNames = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
-        combo_operador = new javax.swing.JComboBox<>();
+        comboOperator = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        texto_consulta = new javax.swing.JTextField();
-        fazer_consulta = new javax.swing.JButton();
+        comboQueryText = new javax.swing.JTextField();
+        queryButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        resultadoLabel = new javax.swing.JLabel();
+        labelResultQuantity = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        resultsTable = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
-        fechar = new javax.swing.JButton();
+        closeButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
-        nome_tabelas = new javax.swing.JComboBox<>();
+        tableNames = new javax.swing.JComboBox<>();
         jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -76,16 +76,16 @@ public class QueryManager extends javax.swing.JDialog {
 
         jLabel1.setText("Coluna:");
 
-        combo_operador.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "equals", "does not equal", "less then", "greater than" }));
+        comboOperator.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "equals", "does not equal", "less then", "greater than" }));
 
         jLabel2.setText("Operador:");
 
         jLabel3.setText("Valor:");
 
-        fazer_consulta.setText("Pesquisar");
-        fazer_consulta.addActionListener(new java.awt.event.ActionListener() {
+        queryButton.setText("Pesquisar");
+        queryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fazer_consultaActionPerformed(evt);
+                queryButton(evt);
             }
         });
 
@@ -97,10 +97,10 @@ public class QueryManager extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(combo_coluna, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(comboColumnNames, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(combo_operador, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(comboOperator, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -108,9 +108,9 @@ public class QueryManager extends javax.swing.JDialog {
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(texto_consulta, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                        .addComponent(comboQueryText, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(fazer_consulta)))
+                        .addComponent(queryButton)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -123,19 +123,19 @@ public class QueryManager extends javax.swing.JDialog {
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(combo_coluna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(combo_operador, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(texto_consulta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(fazer_consulta))
+                    .addComponent(comboColumnNames, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(comboOperator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(comboQueryText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(queryButton))
                 .addContainerGap())
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Resultados"));
 
-        resultadoLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        resultadoLabel.setText("Quantidade de Resultados:  NaN");
+        labelResultQuantity.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        labelResultQuantity.setText("Quantidade de Resultados:  NaN");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        resultsTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -146,9 +146,9 @@ public class QueryManager extends javax.swing.JDialog {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jTable1.setCellSelectionEnabled(true);
-        jTable1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jScrollPane2.setViewportView(jTable1);
+        resultsTable.setCellSelectionEnabled(true);
+        resultsTable.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        jScrollPane2.setViewportView(resultsTable);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -158,23 +158,23 @@ public class QueryManager extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2)
-                    .addComponent(resultadoLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(labelResultQuantity, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addGap(14, 14, 14)
-                .addComponent(resultadoLabel)
+                .addComponent(labelResultQuantity)
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        fechar.setText("Fechar");
-        fechar.addActionListener(new java.awt.event.ActionListener() {
+        closeButton.setText("Fechar");
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fecharActionPerformed(evt);
+                closeButton(evt);
             }
         });
 
@@ -184,14 +184,14 @@ public class QueryManager extends javax.swing.JDialog {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(fechar, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(fechar)
+                .addComponent(closeButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -207,7 +207,7 @@ public class QueryManager extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(nome_tabelas, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(tableNames, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
@@ -219,7 +219,7 @@ public class QueryManager extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(nome_tabelas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(tableNames, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -258,32 +258,32 @@ public class QueryManager extends javax.swing.JDialog {
     
     /*********/
     
-    private void popularNomeTabelasComboBox() {
-	// Chame o método getTabelasDisponiveis da sua classe ConnectionUtil
-	List<String> tabelas = connectionManager.getTabelasDisponiveis();
+    private void populateComboTableNames() {
+	// Chame o método getAvailableTables da sua classe ConnectionUtil
+	List<String> tabelas = connectionManager.getAvailableTables();
 
 	// Limpe o JComboBox
 	//nome_tabelas.removeAllItems();
 
 	// Preencha o JComboBox com os nomes das tabelas
-	nome_tabelas.addItem("Selecione uma tabela...");
+	tableNames.addItem("Selecione uma tabela...");
 	for (String tabela : tabelas) {
-	    nome_tabelas.addItem(tabela);
+	    tableNames.addItem(tabela);
 	}
     }
     
     private void popularNomeColunasComboBox(String tabela) {
-	// Chame o método getColunasDaTabela da sua classe ConnectionUtil
-	List<String> colunas = connectionManager.getColunasDaTabela(tabela);
+	// Chame o método getTableColumns da sua classe ConnectionUtil
+	List<String> colunas = connectionManager.getTableColumns(tabela);
 
 	// Limpe o JComboBox combo_coluna
-	combo_coluna.removeAllItems();
+	comboColumnNames.removeAllItems();
 
 	// Preencha o JComboBox combo_coluna com os nomes das colunas
-	combo_coluna.addItem("Selecione uma coluna...");
+	comboColumnNames.addItem("Selecione uma coluna...");
 	for (String colunaNome : colunas) {
 	    System.out.println(colunaNome);
-	    combo_coluna.addItem(colunaNome);
+	    comboColumnNames.addItem(colunaNome);
 	}
     }
    
@@ -292,17 +292,17 @@ public class QueryManager extends javax.swing.JDialog {
     
 
     
-    private void fecharActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fecharActionPerformed
+    private void closeButton(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButton
         dispose();
-    }//GEN-LAST:event_fecharActionPerformed
+    }//GEN-LAST:event_closeButton
 
-    private void fazer_consultaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fazer_consultaActionPerformed
+    private void queryButton(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queryButton
 
     // Obtém os valores selecionados dos comboboxes e campo de texto
-    String tabelaSelecionada = (String) nome_tabelas.getSelectedItem();
-    String colunaSelecionada = (String) combo_coluna.getSelectedItem();
-    String operadorSelecionado = (String) combo_operador.getSelectedItem();
-    String valorConsulta = texto_consulta.getText();
+    String tabelaSelecionada = (String) tableNames.getSelectedItem();
+    String colunaSelecionada = (String) comboColumnNames.getSelectedItem();
+    String operadorSelecionado = (String) comboOperator.getSelectedItem();
+    String valorConsulta = comboQueryText.getText();
 
     // Mapeia o operador selecionado para um operador SQL válido
     String operadorSQL = "="; // Valor padrão para "equals"
@@ -351,23 +351,23 @@ public class QueryManager extends javax.swing.JDialog {
                 }
 
                 // Atualize o JLabel com a quantidade de resultados
-                resultadoLabel.setText("Quantidade de Resultados: " + count);
+                labelResultQuantity.setText("Quantidade de Resultados: " + count);
 		System.out.println(query);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
 
-    }//GEN-LAST:event_fazer_consultaActionPerformed
+    }//GEN-LAST:event_queryButton
 
 
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox<String> combo_coluna;
-    private javax.swing.JComboBox<String> combo_operador;
-    private javax.swing.JButton fazer_consulta;
-    private javax.swing.JButton fechar;
+    private javax.swing.JButton closeButton;
+    private javax.swing.JComboBox<String> comboColumnNames;
+    private javax.swing.JComboBox<String> comboOperator;
+    private javax.swing.JTextField comboQueryText;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -377,9 +377,9 @@ public class QueryManager extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JComboBox<String> nome_tabelas;
-    private javax.swing.JLabel resultadoLabel;
-    private javax.swing.JTextField texto_consulta;
+    private javax.swing.JLabel labelResultQuantity;
+    private javax.swing.JButton queryButton;
+    private javax.swing.JTable resultsTable;
+    private javax.swing.JComboBox<String> tableNames;
     // End of variables declaration//GEN-END:variables
 }
