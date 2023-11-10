@@ -9,6 +9,11 @@ import com.db.databridge.database.*;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.util.SystemInfo;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -80,8 +85,45 @@ public class Home extends javax.swing.JFrame {
 	labelFileProcessingTime.setText("");
 	
 	setIcon();
+	
+	/* Ouvinte de Eventos de Mouse para abrir o Menu de Contexto na Tabela*/
+	tableFileContent.addMouseListener(new MouseAdapter() {
+	    File csvFile = new File("csvImportado.csv");
+	    
+	    @Override
+	    public void mousePressed(MouseEvent e) {
+		if (e.isPopupTrigger() && csvFile.exists()) {
+		    contextMenu.show(e.getComponent(), e.getX(), e.getY());
+		}
+	    }
+
+	    @Override
+	    public void mouseReleased(MouseEvent e) {
+		if (e.isPopupTrigger() && csvFile.exists()) {
+		    contextMenu.show(e.getComponent(), e.getX(), e.getY());
+		}
+	    }
+	});
+	
+	/* Ações do Menu de Contexto da Tabela*/
+	copyMenuItem.addActionListener((ActionEvent e) -> {
+	    copySelectedCellsToClipboard();
+	});
+	
+	closeFileMenuItem.addActionListener((ActionEvent e) -> {
+	    menuCloseFile(e);
+	});
+	
+	uploadFileMenuItem.addActionListener((ActionEvent e) -> {
+	    if (connectionManager.isConnectionActive()) {
+		menuUploadToDB(e); 
+	    } else {
+		JOptionPane.showMessageDialog(this, "O upload requer conexão com um banco de dados e não há uma conexão no momento. Conecte-se a um banco de dados e tente novamente.", "Erro", JOptionPane.ERROR_MESSAGE);
+	    }
+	});
 
     }
+    
 
     /* Define os ícones do aplicativo */
     private void setIcon() {
@@ -186,9 +228,10 @@ public class Home extends javax.swing.JFrame {
 	}
     }
     
+    
 
     
-/* MÉTODOS COMPARTILHÁVEIS */
+/* MÉTODOS GERAIS */
 
     /* Método compartilhável para permitir alteração da mensagem no Console */
     public void updateConsoleMessage(String mensagem) {
@@ -248,11 +291,37 @@ public class Home extends javax.swing.JFrame {
     }
     
     
+    /* Método para copiar somente a seleção de texto na Tabela */
+    private void copySelectedCellsToClipboard() {
+        int[] selectedRows = tableFileContent.getSelectedRows();
+        int[] selectedColumns = tableFileContent.getSelectedColumns();
+
+        StringBuilder copiedText = new StringBuilder();
+
+        for (int row : selectedRows) {
+            for (int col : selectedColumns) {
+                Object cellValue = tableFileContent.getValueAt(row, col);
+                copiedText.append(cellValue).append("\t"); // Use "\t" para separar as células
+            }
+            copiedText.append("\n"); // Nova linha após cada linha da tabela
+        }
+
+        // Copia o texto para a área de transferência
+        StringSelection stringSelection = new StringSelection(copiedText.toString());
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, null);
+    }
+    
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         fileChooser = new javax.swing.JFileChooser();
+        contextMenu = new javax.swing.JPopupMenu();
+        copyMenuItem = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        uploadFileMenuItem = new javax.swing.JMenuItem();
+        closeFileMenuItem = new javax.swing.JMenuItem();
         superiorPanel = new javax.swing.JPanel();
         buttonViewFileContent = new javax.swing.JButton();
         newConsole = new javax.swing.JLabel();
@@ -290,11 +359,22 @@ public class Home extends javax.swing.JFrame {
         fileChooser.setDialogTitle("Abrir arquivo local");
         fileChooser.setFileFilter(new FileNameExtensionFilter("Arquivos CSV", "csv"));
 
+        copyMenuItem.setText("Copiar seleção");
+        contextMenu.add(copyMenuItem);
+        contextMenu.add(jSeparator4);
+
+        uploadFileMenuItem.setText("Fazer upload...");
+        contextMenu.add(uploadFileMenuItem);
+
+        closeFileMenuItem.setText("Fechar arquivo");
+        contextMenu.add(closeFileMenuItem);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("DataBridge Pro");
         setMinimumSize(new java.awt.Dimension(600, 600));
 
         buttonViewFileContent.setText("Visualizar CSV");
+        buttonViewFileContent.setToolTipText("Recarrega o conteúdo do arquivo na Tabela.");
         buttonViewFileContent.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonViewFileContent(evt);
@@ -332,6 +412,7 @@ public class Home extends javax.swing.JFrame {
         inferiorPanel.add(labelConnectionStatus);
 
         buttonForceCloseConnection.setText("Encerrar conexão");
+        buttonForceCloseConnection.setToolTipText("Força o encerramento da conexão com o banco de dados");
         buttonForceCloseConnection.setFocusable(false);
         buttonForceCloseConnection.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         buttonForceCloseConnection.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -344,14 +425,17 @@ public class Home extends javax.swing.JFrame {
         inferiorPanel.add(toolbarFiller);
 
         labelFileCounts.setText("FileCounts");
+        labelFileCounts.setToolTipText("[Colunas, Linhas]");
         inferiorPanel.add(labelFileCounts);
         inferiorPanel.add(filler2);
 
         labelFileSize.setText("FileSize");
+        labelFileSize.setToolTipText("Tamanho do arquivo no disco");
         inferiorPanel.add(labelFileSize);
         inferiorPanel.add(filler1);
 
         labelFileProcessingTime.setText("ProcessingTime");
+        labelFileProcessingTime.setToolTipText("Tempo de processamento do arquivo");
         inferiorPanel.add(labelFileProcessingTime);
 
         jLayeredPane1.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
@@ -622,8 +706,8 @@ public class Home extends javax.swing.JFrame {
     /* Filtrar fileData do Arquivo - Menu */
     private void menuNewQuery(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuNewQuery
 	if (connectionManager.activeConnection == true) {
-	QueryManager dialogFiltragemDados = new QueryManager(this, true);
-	dialogFiltragemDados.setVisible(true);
+	    QueryManager dialogFiltragemDados = new QueryManager(this, true);
+	    dialogFiltragemDados.setVisible(true);
 	} else {
 	    JOptionPane.showMessageDialog(this, "A filtragem de dados requer conexão com um banco de dados e não há uma conexão no momento. Conecte-se a um banco de dados e tente novamente.", "Erro", JOptionPane.ERROR_MESSAGE);
 	}
@@ -646,6 +730,9 @@ public class Home extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonForceCloseConnection;
     private javax.swing.JButton buttonViewFileContent;
+    private javax.swing.JMenuItem closeFileMenuItem;
+    private javax.swing.JPopupMenu contextMenu;
+    private javax.swing.JMenuItem copyMenuItem;
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
@@ -654,6 +741,7 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     public javax.swing.JLabel labelConnectionStatus;
     public javax.swing.JLabel labelFileCounts;
     public javax.swing.JLabel labelFileProcessingTime;
@@ -677,5 +765,6 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JTable tableFileContent;
     private javax.swing.JScrollPane tableScrollPane;
     private javax.swing.Box.Filler toolbarFiller;
+    private javax.swing.JMenuItem uploadFileMenuItem;
     // End of variables declaration//GEN-END:variables
 }

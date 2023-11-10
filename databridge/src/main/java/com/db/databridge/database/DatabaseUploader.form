@@ -549,6 +549,7 @@
                         <StringItem index="0" value="Selecione uma op&#xe7;&#xe3;o..."/>
                       </StringArray>
                     </Property>
+                    <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;A defini&#xe7;&#xe3;o de uma Chave Prim&#xe1;ria pode n&#xe3;o estar dispon&#xed;vel em todos os bancos de dados."/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
@@ -627,6 +628,9 @@
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="textTableName">
+                  <Properties>
+                    <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;O nome da tabela s&#xf3; pode conter caracteres min&#xfa;sculos e underscore."/>
+                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="buttonValidateTableName">
                   <Properties>
@@ -924,7 +928,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Configura&#xe7;&#xf5;es da Tabela"/>
+                    <TitledBorder title="Configura&#xe7;&#xf5;es dos Dados"/>
                   </Border>
                 </Property>
               </Properties>
@@ -1109,7 +1113,7 @@
                 <Property name="columns" type="int" value="20"/>
                 <Property name="lineWrap" type="boolean" value="true"/>
                 <Property name="rows" type="int" value="5"/>
-                <Property name="text" type="java.lang.String" value="Antes de enviar os dados para o banco de dados, certifique-se de que as todas as configura&#xe7;&#xf5;es foram realizadas. O processo de upload poder&#xe1; durar v&#xe1;rios minutos e sua interrup&#xe7;&#xe3;o pode ocasionar dados corrompidos."/>
+                <Property name="text" type="java.lang.String" value="Antes de enviar os dados para o banco de dados, certifique-se de que as todas as configura&#xe7;&#xf5;es foram realizadas. O processo de upload poder&#xe1; durar v&#xe1;rios minutos e sua interrup&#xe7;&#xe3;o pode ocasionar em dados corrompidos."/>
                 <Property name="wrapStyleWord" type="boolean" value="true"/>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="null"/>

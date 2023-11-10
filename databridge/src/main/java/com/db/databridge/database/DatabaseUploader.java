@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -583,6 +582,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
         labelSelectPK.setText("Chave Primária:");
 
         comboSelectPK.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Selecione uma opção..." }));
+        comboSelectPK.setToolTipText("<html>A definição de uma Chave Primária pode não estar disponível em todos os bancos de dados.");
 
         jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
@@ -623,6 +623,8 @@ public class DatabaseUploader extends javax.swing.JDialog {
         );
 
         labelChooseTableName.setText("Nome da Tabela:");
+
+        textTableName.setToolTipText("<html>O nome da tabela só pode conter caracteres minúsculos e underscore.");
 
         buttonValidateTableName.setText("Validar");
 
@@ -810,7 +812,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel16.setBorder(javax.swing.BorderFactory.createTitledBorder("Configurações da Tabela"));
+        jPanel16.setBorder(javax.swing.BorderFactory.createTitledBorder("Configurações dos Dados"));
 
         jLabel18.setText("Linhas:");
 
@@ -915,7 +917,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
         jTextArea3.setColumns(20);
         jTextArea3.setLineWrap(true);
         jTextArea3.setRows(5);
-        jTextArea3.setText("Antes de enviar os dados para o banco de dados, certifique-se de que as todas as configurações foram realizadas. O processo de upload poderá durar vários minutos e sua interrupção pode ocasionar dados corrompidos.");
+        jTextArea3.setText("Antes de enviar os dados para o banco de dados, certifique-se de que as todas as configurações foram realizadas. O processo de upload poderá durar vários minutos e sua interrupção pode ocasionar em dados corrompidos.");
         jTextArea3.setWrapStyleWord(true);
         jTextArea3.setBorder(null);
         jTextArea3.setDisabledTextColor(new java.awt.Color(102, 102, 102));

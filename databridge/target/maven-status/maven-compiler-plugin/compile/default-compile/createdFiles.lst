@@ -14,6 +14,7 @@ com\db\databridge\window\FileInfo$2.class
 com\db\databridge\database\QueryManager.class
 com\db\databridge\window\Home$1.class
 com\db\databridge\file\FileDownloader$3.class
+com\db\databridge\window\Home$13.class
 com\db\databridge\window\Home$7.class
 com\db\databridge\window\About$1.class
 com\db\databridge\window\FileInfo$LoadDataWorker.class

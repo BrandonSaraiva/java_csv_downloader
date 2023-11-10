@@ -11,6 +11,31 @@
         </Property>
       </Properties>
     </Component>
+    <Container class="javax.swing.JPopupMenu" name="contextMenu">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
+        <Property name="useNullLayout" type="boolean" value="true"/>
+      </Layout>
+      <SubComponents>
+        <MenuItem class="javax.swing.JMenuItem" name="copyMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Copiar sele&#xe7;&#xe3;o"/>
+          </Properties>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator4">
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="uploadFileMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Fazer upload..."/>
+          </Properties>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="closeFileMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Fechar arquivo"/>
+          </Properties>
+        </MenuItem>
+      </SubComponents>
+    </Container>
     <Menu class="javax.swing.JMenuBar" name="menuBar">
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="mainMenuFile">
@@ -236,6 +261,7 @@
         <Component class="javax.swing.JButton" name="buttonViewFileContent">
           <Properties>
             <Property name="text" type="java.lang.String" value="Visualizar CSV"/>
+            <Property name="toolTipText" type="java.lang.String" value="Recarrega o conte&#xfa;do do arquivo na Tabela."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonViewFileContent"/>
@@ -272,6 +298,7 @@
         <Component class="javax.swing.JButton" name="buttonForceCloseConnection">
           <Properties>
             <Property name="text" type="java.lang.String" value="Encerrar conex&#xe3;o"/>
+            <Property name="toolTipText" type="java.lang.String" value="For&#xe7;a o encerramento da conex&#xe3;o com o banco de dados"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>
@@ -293,6 +320,7 @@
         <Component class="javax.swing.JLabel" name="labelFileCounts">
           <Properties>
             <Property name="text" type="java.lang.String" value="FileCounts"/>
+            <Property name="toolTipText" type="java.lang.String" value="[Colunas, Linhas]"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
@@ -317,6 +345,7 @@
         <Component class="javax.swing.JLabel" name="labelFileSize">
           <Properties>
             <Property name="text" type="java.lang.String" value="FileSize"/>
+            <Property name="toolTipText" type="java.lang.String" value="Tamanho do arquivo no disco"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
@@ -341,6 +370,7 @@
         <Component class="javax.swing.JLabel" name="labelFileProcessingTime">
           <Properties>
             <Property name="text" type="java.lang.String" value="ProcessingTime"/>
+            <Property name="toolTipText" type="java.lang.String" value="Tempo de processamento do arquivo"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
