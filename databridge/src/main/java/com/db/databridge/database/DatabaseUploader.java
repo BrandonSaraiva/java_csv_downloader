@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1109,7 +1110,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 		    // Obtenha o caminho absoluto para o arquivo CSV
 		    String caminhoAbsoluto = "csvImportado.csv"; // Substitua pelo caminho real do arquivo CSV
 		    String separador = userSettings.getSelectedSeparator();
-
+		    
 		    // Crie um leitor CSV com o separador selecionado
 		    CSVReader csvReader = new CSVReaderBuilder(new FileReader(caminhoAbsoluto))
 			    .withCSVParser(new CSVParserBuilder().withSeparator(separador.charAt(0)).build())
@@ -1193,11 +1194,11 @@ public class DatabaseUploader extends javax.swing.JDialog {
     
     private String generateFileContentSQL(String[] colunas) {
 	StringBuilder insertSQL = new StringBuilder("INSERT INTO ");
-	insertSQL.append(userSettings.getSelectedSchema());
+	insertSQL.append("\"").append(userSettings.getSelectedSchema()).append("\"");
 	insertSQL.append(".");
-	insertSQL.append(userSettings.getTableName());
+	insertSQL.append("\"").append(userSettings.getTableName()).append("\"");
 	insertSQL.append(" (");
-	insertSQL.append(String.join(", ", colunas));
+	insertSQL.append(String.join(", ", Arrays.stream(colunas).map(c -> "\"" + c + "\"").toArray(String[]::new)));
 	insertSQL.append(") VALUES (");
 	for (int i = 0; i < colunas.length; i++) {
 	    insertSQL.append("?");
@@ -1206,8 +1207,9 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	    }
 	}
 	insertSQL.append(")");
+	System.out.println(insertSQL.toString());
 	return insertSQL.toString();
-    }
+  }
     
     
     private void generateNewTableSQL(String[] colunas) throws SQLException {
