@@ -90,7 +90,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	
 	// Preenche o combo_PrimaryKeyColumn com os nomes das colunas
 	List<String> columnNames = FileUtil.getFileColumnNames(arquivoCSV);
-	comboSelectPK.addItem("Não definir uma Chave Primária");
+	comboSelectPK.addItem("Definir Chave Primária automaticamente");
         for (String columnName : columnNames) {
             comboSelectPK.addItem(columnName);
 	    
@@ -1198,18 +1198,37 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	insertSQL.append(".");
 	insertSQL.append("\"").append(userSettings.getTableName()).append("\"");
 	insertSQL.append(" (");
+
+	// Lógica para a chave primária
+	String primaryKey = userSettings.getPrimaryKey();
+	if (primaryKey.equals("Definir Chave Primária automaticamente")) {
+	    insertSQL.append("\"ID\", ");
+	} else {
+	    insertSQL.append("\"").append(primaryKey).append("\", ");
+	}
+
+	// Adiciona as colunas restantes
 	insertSQL.append(String.join(", ", Arrays.stream(colunas).map(c -> "\"" + c + "\"").toArray(String[]::new)));
 	insertSQL.append(") VALUES (");
+
+	// Adiciona a lógica para a chave primária
+	if (primaryKey.equals("Definir Chave Primária automaticamente")) {
+	    insertSQL.append("DEFAULT, ");
+	} else {
+	    insertSQL.append("?, ");
+	}
+
 	for (int i = 0; i < colunas.length; i++) {
 	    insertSQL.append("?");
 	    if (i < colunas.length - 1) {
 		insertSQL.append(", ");
 	    }
 	}
+
 	insertSQL.append(")");
 	System.out.println(insertSQL.toString());
 	return insertSQL.toString();
-  }
+    }
     
     
     private void generateNewTableSQL(String[] colunas) throws SQLException {
@@ -1221,23 +1240,34 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	    createTableSQL.append(userSettings.getTableName()); // Use o nome da tabela definido pelo usuário
 	    createTableSQL.append(" (");
 
+	    // Adiciona a lógica para a chave primária
+	    String primaryKey = userSettings.getPrimaryKey();
+	    if (primaryKey.equals("Definir Chave Primária automaticamente")) {
+		// Gera uma nova coluna e define como chave primária
+		createTableSQL.append("\"ID\" SERIAL PRIMARY KEY,");
+	    } else {
+		// Usa a chave primária escolhida pelo usuário
+		createTableSQL.append("\"").append(primaryKey).append("\" VARCHAR PRIMARY KEY,");
+	    }
+
+	    // Adiciona as colunas restantes
 	    for (int i = 0; i < colunas.length; i++) {
-		String columnName = colunas[i].trim(); // Nome da coluna
-		String dataType = "VARCHAR"; // Defina todos os tipos como VARCHAR
+		String columnName = colunas[i].trim();
+		String dataType = "VARCHAR"; // Define todos os tipos como VARCHAR - MELHORIA FUTURA
 
-		createTableSQL.append("\"").append(columnName).append("\"").append(" ").append(dataType);
+		if (!columnName.equals(primaryKey)) {
+		    createTableSQL.append("\"").append(columnName).append("\"").append(" ").append(dataType);
 
-		if (i < colunas.length - 1) {
-		    createTableSQL.append(", ");
+		    if (i < colunas.length - 1) {
+			createTableSQL.append(", ");
+		    }
 		}
 	    }
 
 	    createTableSQL.append(")");
 
-	    try (Statement statement = connectionManager.connection.createStatement() // Use a conexão da classe DatabaseManager
-	    ) {
+	    try (Statement statement = connectionManager.connection.createStatement()) {
 		statement.executeUpdate(createTableSQL.toString());
-		// Feche a declaração
 	    }
 	} catch (SQLException e) {
 	    System.out.println("ERRO: Falha na criação da tabela. " + e);

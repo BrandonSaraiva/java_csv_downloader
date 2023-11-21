@@ -46,7 +46,7 @@ public class FileUtilTest {
         File testFile = new File(filePath);
 
         int columnIndex = 0; // Índice da coluna a ser testada
-        int expectedUniqueValuesCount = 37; // Número esperado de valores únicos
+        int expectedUniqueValuesCount = 418; // Número esperado de valores únicos
 
         int actualUniqueValuesCount = FileUtil.countUniqueValuesInColumn(testFile, columnIndex);
 
@@ -60,8 +60,8 @@ public class FileUtilTest {
         String filePath = "C:\\Users\\jobsr\\Downloads\\GitHub-Java\\java_csv_downloader\\databridge\\src\\test\\java\\com\\db\\databridge\\testFile.csv";
         File testFile = new File(filePath);
 
-        int columnIndex = 2; // Índice da coluna a ser testada
-        int expectedRecordCount = 37; // Número esperado de registros totais
+        int columnIndex = 0; // Índice da coluna a ser testada
+        int expectedRecordCount = 418; // Número esperado de registros totais
 
         int actualRecordCount = FileUtil.countRecordsInColumn(testFile, columnIndex);
 
