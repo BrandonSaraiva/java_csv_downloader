@@ -28,7 +28,7 @@ public class About extends javax.swing.JDialog {
         setTitle("Sobre");
         setResizable(false);
 
-        jLabel1.setText("Versão 1.0.2");
+        jLabel1.setText("Versão 1.0.3");
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel2.setText("DataBridge Pro");

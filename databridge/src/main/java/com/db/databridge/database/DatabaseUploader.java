@@ -1,5 +1,6 @@
 package com.db.databridge.database;
 
+/* Imports */
 import com.db.databridge.util.ConnectionUtil;
 import com.db.databridge.window.Home;
 import com.db.databridge.util.UserSettings;
@@ -90,7 +91,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	
 	// Preenche o combo_PrimaryKeyColumn com os nomes das colunas
 	List<String> columnNames = FileUtil.getFileColumnNames(arquivoCSV);
-	comboSelectPK.addItem("Definir Chave Primária automaticamente");
+	comboSelectPK.addItem("Definir automaticamente");
         for (String columnName : columnNames) {
             comboSelectPK.addItem(columnName);
 	    
@@ -1127,7 +1128,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 			generateNewTableSQL(colunas);
 
 			// Obtenha o número total de linhas do CSV para calcular o progresso
-/**/			int totalLinhas = FileUtil.getFileRowCount(arquivoCSV);
+			int totalLinhas = FileUtil.getFileRowCount(arquivoCSV);
 
 			String insertSQL = generateFileContentSQL(colunas);
 
@@ -1201,7 +1202,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 
 	// Lógica para a chave primária
 	String primaryKey = userSettings.getPrimaryKey();
-	if (primaryKey.equals("Definir Chave Primária automaticamente")) {
+	if (primaryKey.equals("Definir automaticamente")) {
 	    insertSQL.append("\"ID\", ");
 	} else {
 	    insertSQL.append("\"").append(primaryKey).append("\", ");
@@ -1212,7 +1213,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 	insertSQL.append(") VALUES (");
 
 	// Adiciona a lógica para a chave primária
-	if (primaryKey.equals("Definir Chave Primária automaticamente")) {
+	if (primaryKey.equals("Definir automaticamente")) {
 	    insertSQL.append("DEFAULT, ");
 	} else {
 	    insertSQL.append("?, ");
@@ -1242,7 +1243,7 @@ public class DatabaseUploader extends javax.swing.JDialog {
 
 	    // Adiciona a lógica para a chave primária
 	    String primaryKey = userSettings.getPrimaryKey();
-	    if (primaryKey.equals("Definir Chave Primária automaticamente")) {
+	    if (primaryKey.equals("Definir automaticamente")) {
 		// Gera uma nova coluna e define como chave primária
 		createTableSQL.append("\"ID\" SERIAL PRIMARY KEY,");
 	    } else {

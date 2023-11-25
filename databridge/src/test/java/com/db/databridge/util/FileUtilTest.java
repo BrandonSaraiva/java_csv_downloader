@@ -13,7 +13,6 @@ public class FileUtilTest {
     /* Teste para verificar se a contagem de dados ausentes em uma coluna está funcionando corretamente */
     @Test
     void testCountMissingDataInColumn() {
-        // Teste para verificar se a contagem de dados ausentes em uma coluna funciona corretamente
         String filePath = "C:\\Users\\jobsr\\Downloads\\GitHub-Java\\java_csv_downloader\\databridge\\src\\test\\java\\com\\db\\databridge\\testFile.csv";
         File testFile = new File(filePath);
 
